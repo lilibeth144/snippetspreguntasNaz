@@ -1,0 +1,40 @@
+//Esta es la promesa Futuro que devuelve un valor true si guarda una actividad en la base de datos; false sino lo guarda
+  Future<Respuesta> crearActividad(String nombreA, DateTime fechai,DateTime? fechaf,DateTime hora, String lugarA, String nombreE, String tlfE ) async{
+   Respuesta _resp=Respuesta();
+    try {
+      await _db.collection('actividades').add({'nombre':nombreA,'fechaInicial':fechai.toUtc(),
+      'fechaFin':fechaf,'hora':hora,'lugar':lugarA, 'nombreEncargado':nombreE, 'tlfEncargado':tlfE })
+      .timeout(Duration(seconds: 10),onTimeout: (){
+        _resp.creado=false;
+        _resp.cod=3;
+       throw 'Sin Internet :Tiempo de petición excedido\n Conéctese a internet para sincronizar los datos de la memoria con la base de datos';
+      })
+      .catchError((e){
+       _resp.creado=false;
+       _resp.res='Error:$e';
+        print('cathch $e');
+        throw e;
+      })
+      .then((_){
+         print('bien bien');
+        _resp.creado=true;
+        _resp.res='Actividad creada con Exito';
+         return _resp;
+      })
+      .onError((e, stackTrace){
+        print('$e');
+        _resp.creado=false;
+        _resp.res=e.toString();
+         return _resp;
+    });
+    print(_resp.creado);
+     return _resp;
+     
+    } catch (e) {
+       print('errrrror:$e');
+       _resp.creado=false;
+       _resp.res='Error'+e.toString();
+       print('final:+$e');
+      return _resp;  
+    }
+  }
